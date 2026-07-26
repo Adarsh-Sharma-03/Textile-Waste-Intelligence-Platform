@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import MaterialRecognition from "./pages/MaterialRecognition";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -17,6 +18,10 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dataset" element={<Dataset />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route
+  path="/material-recognition"
+  element={<MaterialRecognition />}
+/>
       </Routes>
     </BrowserRouter>
   );

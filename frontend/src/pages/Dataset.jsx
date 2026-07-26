@@ -1,221 +1,267 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
 import API from "../services/api";
-import "../styles/Dashboard.css";
-
-const tableHeader = {
-  border: "1px solid #ddd",
-  padding: "12px",
-  background: "#2563eb",
-  color: "white",
-};
-
-const tableCell = {
-  border: "1px solid #ddd",
-  padding: "12px",
-  textAlign: "center",
-};
+import "../styles/Dataset.css";
 
 function Dataset() {
-  const [datasets, setDatasets] = useState([]);
-  const [fabricType, setFabricType] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
 
-  const loadDatasets = async () => {
-    try {
-      const res = await API.get("/dataset");
-      setDatasets(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    const [datasets, setDatasets] = useState([]);
+    const [fabricType, setFabricType] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadDatasets();
-  }, []);
+    const loadDatasets = async () => {
 
-  const uploadDataset = async () => {
-    if (!selectedFile || !fabricType) {
-      alert("Please select file and fabric type");
-      return;
-    }
+        try {
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("fabric_type", fabricType);
+            const res = await API.get("/dataset");
+            setDatasets(res.data);
 
-    try {
-      await API.post("/dataset", formData);
+        }
 
-      alert("Dataset Uploaded Successfully");
+        catch (err) {
 
-      setSelectedFile(null);
-      setFabricType("");
+            console.log(err);
+            toast.error("Failed to load datasets");
 
-      document.getElementById("datasetFile").value = "";
+        }
 
-      loadDatasets();
-    } catch (err) {
-      console.log(err);
-      alert("Upload Failed");
-    }
-  };
+    };
 
-  return (
-    <>
-      <Navbar />
+    useEffect(() => {
 
-      <div className="dashboard">
+        loadDatasets();
 
-        <h1>Dataset Management</h1>
+    }, []);
 
-        {/* Statistics */}
+    const uploadDataset = async () => {
 
-        <div className="dashboard-cards">
+        if (!selectedFile || !fabricType) {
 
-          <div className="dashboard-card">
-            <h2>📁</h2>
-            <p>Total Files</p>
-            <h3>{datasets.length}</h3>
-          </div>
+            toast.warning("Please select file and fabric type.");
+            return;
 
-          <div className="dashboard-card">
-            <h2>📊</h2>
-            <p>Uploaded</p>
-            <h3>{datasets.length}</h3>
-          </div>
+        }
 
-          <div className="dashboard-card">
-            <h2>🗄️</h2>
-            <p>Database</p>
-            <h3>PostgreSQL</h3>
-          </div>
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/jpg"
+        ];
 
-        </div>
+        if (!allowedTypes.includes(selectedFile.type)) {
 
-        {/* Upload Card */}
+            toast.warning("Only JPG and PNG images are allowed.");
+            return;
 
-        <div
-          style={{
-            background: "white",
-            marginTop: "40px",
-            padding: "25px",
-            borderRadius: "12px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-          }}
-        >
+        }
 
-          <h2>Upload New Dataset</h2>
+        const formData = new FormData();
 
-          <input
-            id="datasetFile"
-            type="file"
-            onChange={(e) => setSelectedFile(e.target.files[0])}
-            style={{
-              display: "block",
-              marginTop: "20px",
-              marginBottom: "15px",
-            }}
-          />
+        formData.append("file", selectedFile);
+        formData.append("fabric_type", fabricType);
 
-          <input
-            type="text"
-            placeholder="Fabric Type"
-            value={fabricType}
-            onChange={(e) => setFabricType(e.target.value)}
-            style={{
-              padding: "10px",
-              width: "300px",
-              marginBottom: "20px",
-            }}
-          />
+        setLoading(true);
 
-          <br />
+        try {
 
-          <button
-            className="login-btn"
-            style={{ width: "220px" }}
-            onClick={uploadDataset}
-          >
-            Upload Dataset
-          </button>
+            await API.post("/dataset", formData);
 
-        </div>
+            toast.success("Dataset Uploaded Successfully");
 
-        {/* Dataset Table */}
+            setSelectedFile(null);
+            setFabricType("");
 
-        <div
-          style={{
-            background: "white",
-            marginTop: "40px",
-            padding: "25px",
-            borderRadius: "12px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-          }}
-        >
+            document.getElementById("datasetFile").value = "";
 
-          <h2>Dataset Records</h2>
+            loadDatasets();
 
-          <table
-            style={{
-              width: "100%",
-              marginTop: "20px",
-              borderCollapse: "collapse",
-            }}
-          >
+        }
 
-            <thead>
+        catch (err) {
 
-              <tr>
+            console.log(err);
+            toast.error("Upload Failed");
 
-                <th style={tableHeader}>ID</th>
-                <th style={tableHeader}>File Name</th>
-                <th style={tableHeader}>Fabric Type</th>
-                <th style={tableHeader}>Status</th>
+        }
 
-              </tr>
+        setLoading(false);
 
-            </thead>
+    };
 
-            <tbody>
+    const filteredDatasets = datasets.filter((item) =>
+        item.filename.toLowerCase().includes(search.toLowerCase()) ||
+        item.fabric_type.toLowerCase().includes(search.toLowerCase())
+    );
 
-              {datasets.map((item) => (
+    return (
 
-                <tr key={item.id}>
+        <>
 
-                  <td style={tableCell}>{item.id}</td>
+            <Navbar />
 
-                  <td style={tableCell}>
-                    {item.filename}
-                  </td>
+            <div className="dataset-container">
 
-                  <td style={tableCell}>
-                    {item.fabric_type}
-                  </td>
+                <h1 className="dataset-title">
+                    📂 Dataset Management
+                </h1>
 
-                  <td
-                    style={{
-                      ...tableCell,
-                      color: "green",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.status}
-                  </td>
+                <div className="dataset-summary">
 
-                </tr>
+                    <div className="dataset-card">
+                        <h2>{datasets.length}</h2>
+                        <p>Total Files</p>
+                    </div>
 
-              ))}
+                    <div className="dataset-card">
+                        <h2>{datasets.length}</h2>
+                        <p>Uploaded Files</p>
+                    </div>
 
-            </tbody>
+                    <div className="dataset-card">
+                        <h2>PostgreSQL</h2>
+                        <p>Database</p>
+                    </div>
 
-          </table>
+                </div>
 
-        </div>
+                <div className="upload-card">
 
-      </div>
-    </>
-  );
+                    <h2>⬆ Upload New Dataset</h2>
+
+                    <input
+                        id="datasetFile"
+                        type="file"
+                        onChange={(e) =>
+                            setSelectedFile(e.target.files[0])
+                        }
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Fabric Type"
+                        value={fabricType}
+                        onChange={(e) =>
+                            setFabricType(e.target.value)
+                        }
+                    />
+
+                    <button
+                        className="upload-btn"
+                        onClick={uploadDataset}
+                        disabled={loading}
+                    >
+                        {loading ? "Uploading..." : "Upload Dataset"}
+                    </button>
+
+                </div>
+
+                <input
+                    className="search-dataset"
+                    type="text"
+                    placeholder="🔍 Search Dataset..."
+                    value={search}
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
+                />
+
+                <div className="dataset-table-card">
+
+                    <table className="dataset-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>File Name</th>
+                                <th>Fabric Type</th>
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {
+
+                                filteredDatasets.length === 0 ?
+
+                                    (
+
+                                        <tr>
+
+                                            <td
+                                                colSpan="4"
+                                                style={{
+                                                    padding: "30px"
+                                                }}
+                                            >
+
+                                                No Dataset Found
+
+                                            </td>
+
+                                        </tr>
+
+                                    )
+
+                                    :
+
+                                    (
+
+                                        filteredDatasets.map((item) => (
+
+                                            <tr key={item.id}>
+
+                                                <td>{item.id}</td>
+
+                                                <td>{item.filename}</td>
+
+                                                <td>
+
+                                                    <span className="fabric-badge">
+
+                                                        {item.fabric_type}
+
+                                                    </span>
+
+                                                </td>
+
+                                                <td>
+
+                                                    <span className="status-uploaded">
+
+                                                        {item.status}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        ))
+
+                                    )
+
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </>
+
+    );
+
 }
 
 export default Dataset;

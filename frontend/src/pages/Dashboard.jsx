@@ -29,7 +29,12 @@ function Dashboard() {
 
       <div className="dashboard">
 
-        <h1>Dashboard</h1>
+        <div className="dashboard-title">
+          <h1>📊 Dashboard</h1>
+          <p>
+            AI Powered Textile Waste Intelligence Platform
+          </p>
+        </div>
 
         <div className="dashboard-cards">
 
@@ -57,11 +62,22 @@ function Dashboard() {
             <h3>PostgreSQL</h3>
           </div>
 
+          <div className="dashboard-card">
+            <h2>🤖</h2>
+            <p>AI Model</p>
+            <h3>MobileNetV2</h3>
+          </div>
+
+          <div className="dashboard-card">
+            <h2>♻️</h2>
+            <p>System Status</p>
+            <h3 className="status-online">Operational</h3>
+          </div>
+
         </div>
 
       </div>
     </>
   );
 }
-
 export default Dashboard;

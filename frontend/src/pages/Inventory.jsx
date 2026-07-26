@@ -1,178 +1,243 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
-import "../styles/Dashboard.css";
 import API from "../services/api";
+import "../styles/Inventory.css";
 
 function Inventory() {
-  const [inventory, setInventory] = useState([]);
-  const [fabric, setFabric] = useState("");
-  const [weight, setWeight] = useState("");
 
-  const fetchInventory = async () => {
-    try {
-      const response = await API.get("/inventory");
-      setInventory(response.data);
-    } catch (error) {
-      console.log(error);
-      alert("Failed to load inventory");
-    }
-  };
+    const [inventory, setInventory] = useState([]);
+    const [fabric, setFabric] = useState("");
+    const [weight, setWeight] = useState("");
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchInventory();
-  }, []);
+    const fetchInventory = async () => {
 
-  const addFabric = async () => {
-    if (!fabric || !weight) {
-      alert("Please fill all fields");
-      return;
-    }
+        try {
 
-    try {
-      const response = await API.post("/inventory", {
-        fabric,
-        weight,
-      });
+            const response = await API.get("/inventory");
+            setInventory(response.data);
 
-      alert(response.data.message);
+        }
 
-      setFabric("");
-      setWeight("");
+        catch (error) {
 
-      fetchInventory();
-    } catch (error) {
-      console.log(error);
-      alert("Failed to add fabric");
-    }
-  };
+            console.log(error);
+            toast.error("Failed to load inventory");
 
-  return (
-    <>
-      <Navbar />
+        }
 
-      <div
-        className="dashboard"
-        style={{
-          maxWidth: "1100px",
-          margin: "30px auto",
-          padding: "20px",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: "30px",
-          }}
-        >
-          📦 Inventory Management
-        </h1>
+    };
 
-        {/* Form Card */}
-        <div
-          style={{
-            background: "#fff",
-            padding: "25px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-            marginBottom: "30px",
-            display: "flex",
-            gap: "15px",
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Fabric Name"
-            value={fabric}
-            onChange={(e) => setFabric(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: "220px",
-              padding: "12px",
-            }}
-          />
+    useEffect(() => {
 
-          <input
-            type="text"
-            placeholder="Weight"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: "180px",
-              padding: "12px",
-            }}
-          />
+        fetchInventory();
 
-          <button
-            className="login-btn"
-            style={{
-              width: "180px",
-              height: "45px",
-            }}
-            onClick={addFabric}
-          >
-            Add Fabric
-          </button>
-        </div>
+    }, []);
 
-        {/* Table Card */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "12px",
-            overflow: "hidden",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-            }}
-          >
-            <thead>
-              <tr
-                style={{
-                  background: "#2563eb",
-                  color: "#fff",
-                }}
-              >
-                <th style={headerStyle}>ID</th>
-                <th style={headerStyle}>Fabric</th>
-                <th style={headerStyle}>Weight</th>
-                <th style={headerStyle}>Status</th>
-              </tr>
-            </thead>
+    const addFabric = async () => {
 
-            <tbody>
-              {inventory.map((item) => (
-                <tr key={item.id}>
-                  <td style={cellStyle}>{item.id}</td>
-                  <td style={cellStyle}>{item.fabric}</td>
-                  <td style={cellStyle}>{item.weight}</td>
-                  <td style={cellStyle}>{item.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </>
-  );
+        if (!fabric || !weight) {
+
+            toast.warning("Please fill all fields");
+            return;
+
+        }
+
+        if (Number(weight) <= 0) {
+
+            toast.warning("Weight must be greater than 0");
+            return;
+
+        }
+
+        setLoading(true);
+
+        try {
+
+            const response = await API.post("/inventory", {
+
+                fabric,
+                weight
+
+            });
+
+            toast.success(response.data.message);
+
+            setFabric("");
+            setWeight("");
+
+            fetchInventory();
+
+        }
+
+        catch (error) {
+
+            console.log(error);
+            toast.error("Failed to add fabric");
+
+        }
+
+        setLoading(false);
+
+    };
+
+    const filteredInventory = inventory.filter((item) =>
+        item.fabric.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const totalWeight = inventory.reduce(
+        (sum, item) => sum + Number(item.weight),
+        0
+    );
+
+    return (
+
+        <>
+
+            <Navbar />
+
+            <div className="inventory-container">
+
+                <h1 className="inventory-title">
+                    📦 Inventory Management
+                </h1>
+
+                <div className="summary-cards">
+
+                    <div className="summary-card">
+                        <h2>{inventory.length}</h2>
+                        <p>Total Fabrics</p>
+                    </div>
+
+                    <div className="summary-card">
+                        <h2>{totalWeight} kg</h2>
+                        <p>Total Weight</p>
+                    </div>
+
+                    <div className="summary-card">
+                        <h2>
+                            {
+                                inventory.filter(
+                                    (item) => item.status === "Available"
+                                ).length
+                            }
+                        </h2>
+                        <p>Available</p>
+                    </div>
+
+                </div>
+
+                <div className="form-card">
+
+                    <input
+                        type="text"
+                        placeholder="Fabric Name"
+                        value={fabric}
+                        onChange={(e) => setFabric(e.target.value)}
+                    />
+
+                    <input
+                        type="number"
+                        placeholder="Weight (kg)"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                    />
+
+                    <button
+                        className="add-btn"
+                        onClick={addFabric}
+                        disabled={loading}
+                    >
+                        {loading ? "Adding..." : "➕ Add Fabric"}
+                    </button>
+
+                </div>
+
+                <input
+                    className="search-box"
+                    type="text"
+                    placeholder="🔍 Search Fabric..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+
+                <div className="table-card">
+
+                    <table className="inventory-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Fabric</th>
+                                <th>Weight</th>
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {filteredInventory.length === 0 ? (
+
+                                <tr>
+
+                                    <td colSpan="4">
+                                        No Fabric Found
+                                    </td>
+
+                                </tr>
+
+                            ) : (
+
+                                filteredInventory.map((item) => (
+
+                                    <tr key={item.id}>
+
+                                        <td>{item.id}</td>
+
+                                        <td>{item.fabric}</td>
+
+                                        <td>{item.weight} kg</td>
+
+                                        <td>
+
+                                            <span
+                                                className={`status-badge ${
+                                                    item.status === "Available"
+                                                        ? "status-active"
+                                                        : item.status === "Pending"
+                                                        ? "status-pending"
+                                                        : "status-low"
+                                                }`}
+                                            >
+                                                {item.status}
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                ))
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </>
+
+    );
+
 }
-
-const headerStyle = {
-  padding: "15px",
-  textAlign: "center",
-  fontSize: "16px",
-};
-
-const cellStyle = {
-  padding: "15px",
-  textAlign: "center",
-  borderBottom: "1px solid #e5e7eb",
-};
 
 export default Inventory;
