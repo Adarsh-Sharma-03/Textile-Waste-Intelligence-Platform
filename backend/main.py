@@ -203,7 +203,10 @@ def dashboard_stats(
     return crud.get_dashboard_stats(db)
 
 @app.post("/predict")
-def predict_image(file: UploadFile = File(...)):
+def predict_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
 
     global latest_prediction
 
@@ -218,6 +221,8 @@ def predict_image(file: UploadFile = File(...)):
 
     latest_prediction = result
 
+    crud.add_prediction_history(db, result)
+
     os.remove(temp_path)
 
     return {
@@ -225,19 +230,28 @@ def predict_image(file: UploadFile = File(...)):
         "prediction": result
     }
 
+    
+@app.get("/prediction-history")
+def prediction_history(
+    db: Session = Depends(get_db)
+):
+
+    history = crud.get_prediction_history(db)
+
+    return history
 @app.get("/report")
 def get_report():
 
     return {
-        "project": "Textile Waste Intelligence Platform",
-        "status": "Completed",
-        "material_recognition": True,
-        "waste_classification": True,
-        "recyclability_analysis": True,
-        "model": "MobileNetV2",
-        "accuracy": "100%",
-        "recommendation": "Reuse or Recycle"
-    }
+    "project": "Textile Waste Intelligence Platform",
+    "status": "Completed",
+    "material_recognition": True,
+    "waste_classification": True,
+    "recyclability_analysis": True,
+    "model": "MobileNetV2",
+    "accuracy": f"{latest_prediction.get('confidence',0)}%",
+    "recommendation": latest_prediction.get("recommendation","-")
+}
 
 @app.get("/download-report")
 def download_report():

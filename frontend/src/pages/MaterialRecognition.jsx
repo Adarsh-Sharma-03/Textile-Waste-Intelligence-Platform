@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
 import "../styles/Dashboard.css";
@@ -12,6 +12,30 @@ function MaterialRecognition() {
     const [report, setReport] = useState(null);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    useEffect(() => {
+
+        loadPredictionHistory();
+
+    }, []);
+
+    const loadPredictionHistory = async () => {
+
+        try {
+
+            const response = await api.get("/prediction-history");
+
+            setHistory(response.data);
+
+        }
+
+        catch (error) {
+
+            console.log(error);
+
+        }
+
+    };
+    const [analysis, setAnalysis] = useState(null);
 
     const handleFileChange = (e) => {
 
@@ -52,6 +76,7 @@ function MaterialRecognition() {
             });
 
             const prediction = response.data.prediction;
+            setAnalysis(prediction);
 
             setResult(prediction);
 
@@ -59,19 +84,7 @@ function MaterialRecognition() {
 
             setReport(reportResponse.data);
 
-            setHistory((prev) => [
-
-                {
-                    time: new Date().toLocaleTimeString(),
-                    fabric: prediction.fabric,
-                    confidence: prediction.confidence,
-                    category: prediction.category,
-                    recyclability: prediction.recyclability
-                },
-
-                ...prev
-
-            ]);
+            await loadPredictionHistory();
 
         }
 
@@ -88,40 +101,40 @@ function MaterialRecognition() {
     };
     const downloadReport = async () => {
 
-    try {
+        try {
 
-        const response = await api.get("/download-report", {
-            responseType: "blob",
-        });
+            const response = await api.get("/download-report", {
+                responseType: "blob",
+            });
 
-        const url = window.URL.createObjectURL(
-            new Blob([response.data])
-        );
+            const url = window.URL.createObjectURL(
+                new Blob([response.data])
+            );
 
-        const link = document.createElement("a");
+            const link = document.createElement("a");
 
-        link.href = url;
-        link.download = "Textile_AI_Report.pdf";
+            link.href = url;
+            link.download = "Textile_AI_Report.pdf";
 
-        document.body.appendChild(link);
+            document.body.appendChild(link);
 
-        link.click();
+            link.click();
 
-        link.remove();
+            link.remove();
 
-        window.URL.revokeObjectURL(url);
+            window.URL.revokeObjectURL(url);
 
-    }
+        }
 
-    catch (error) {
+        catch (error) {
 
-        console.log(error);
+            console.log(error);
 
-        alert("Failed to download report.");
+            alert("Failed to download report.");
 
-    }
+        }
 
-};
+    };
 
     return (
 
@@ -161,16 +174,16 @@ function MaterialRecognition() {
                 </button>
                 <br /><br />
 
-{result && (
+                {result && (
 
-    <button
-        className="predict-btn"
-        onClick={downloadReport}
-    >
-        📥 Download AI Report
-    </button>
+                    <button
+                        className="predict-btn"
+                        onClick={downloadReport}
+                    >
+                        📥 Download AI Report
+                    </button>
 
-)}
+                )}
 
                 {loading && (
 
@@ -191,20 +204,77 @@ function MaterialRecognition() {
                             <div className="result-card">
 
                                 <h2>🧵 Prediction Result</h2>
+                                <hr />
+
+                                <p>
+                                    <b>Fiber Composition :</b>
+
+                                    <span className="badge blue">
+
+                                        {analysis?.fiber_composition}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+                                    <b>Reuse Potential :</b>
+
+                                    <span className="badge green">
+                                        {analysis?.reuse_potential_score}%
+                                    </span>
+                                </p>
+
+                                <p>
+
+                                    <b>Texture :</b>
+
+                                    <span className="badge yellow">
+
+                                        {analysis?.texture}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Pattern :</b>
+
+                                    <span className="badge blue">
+
+                                        {analysis?.pattern}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Color :</b>
+
+                                    <span className="badge green">
+
+                                        {analysis?.color_type}
+
+                                    </span>
+
+                                </p>
 
                                 <p><b>Fabric</b></p>
 
                                 <h3>{result.fabric}</h3>
+                                <p>
 
-                                <p><b>Confidence</b></p>
+                                    <b>AI Confidence Level</b>
+
+                                </p>
 
                                 <div className="progress-bar">
 
                                     <div
                                         className="progress-fill"
-                                        style={{
-                                            width: `${result.confidence}%`
-                                        }}
+                                        style={{ width: `${result.confidence}%` }}
                                     >
 
                                         {result.confidence}%
@@ -212,6 +282,8 @@ function MaterialRecognition() {
                                     </div>
 
                                 </div>
+
+
 
                                 <p>
 
@@ -226,15 +298,11 @@ function MaterialRecognition() {
                                 </p>
 
                                 <p>
-
                                     <b>Recyclability :</b>
 
-                                    <span className={result.recyclability === "High" ? "badge green" : "badge red"}>
-
-                                        {result.recyclability}
-
+                                    <span className="badge green">
+                                        {analysis?.recyclability_score}%
                                     </span>
-
                                 </p>
 
                                 <p>
@@ -244,6 +312,29 @@ function MaterialRecognition() {
                                     <span className="badge yellow">
 
                                         {result.recommendation}
+
+                                    </span>
+
+                                </p>
+                                <p>
+
+                                    <b>Damage :</b>
+
+                                    <span className="badge red">
+
+                                        {analysis?.damage}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Contamination :</b>
+
+                                    <span className="badge yellow">
+
+                                        {analysis?.contamination}
 
                                     </span>
 
@@ -290,6 +381,134 @@ function MaterialRecognition() {
                             <div className="result-card">
 
                                 <h2>🧠 AI Insights</h2>
+                                <hr />
+                                <h3>♻ Recycling Recommendation</h3>
+
+                                <p>
+
+                                    <b>Reuse Potential :</b>
+
+                                    <span className="badge green">
+
+                                        {analysis?.reuse_potential}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Disposal :</b>
+
+                                    <span className="badge red">
+
+                                        {analysis?.disposal}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Recycling Method :</b>
+
+                                    <span className="badge yellow">
+
+                                        {analysis?.recycling_method}
+
+                                    </span>
+
+                                </p>
+                                <hr />
+
+                                <p>
+                                    <b>Blend Identification :</b>
+
+                                    <span className="badge blue">
+                                        {analysis?.blend_identification}
+                                    </span>
+                                </p>
+
+                                <p>
+                                    <b>Waste Category :</b>
+
+                                    <span className="badge red">
+                                        {analysis?.waste_category}
+                                    </span>
+                                </p>
+
+                                <p><b>Recycling Options :</b></p>
+
+                                <ul>
+                                    {analysis?.recycling_options?.map((item, index) => (
+                                        <li key={index}>{item}</li>
+                                    ))}
+                                </ul>
+
+                                <p><b>Waste Reduction Tips :</b></p>
+
+                                <ul>
+                                    {analysis?.waste_reduction?.map((item, index) => (
+                                        <li key={index}>{item}</li>
+                                    ))}
+                                </ul>
+
+                                <hr />
+
+                                <h3>🌱 Sustainability Intelligence</h3>
+
+                                <p>
+                                    <b>Environmental Impact :</b>
+
+                                    <span className="badge blue">
+                                        {analysis?.environmental_impact_score}%
+                                    </span>
+                                </p>
+
+                                <p>
+
+                                    <b>CO₂ Saving :</b>
+
+                                    <span className="badge green">
+
+                                        {analysis?.co2_saving}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Water Saving :</b>
+
+                                    <span className="badge blue">
+
+                                        {analysis?.water_saving}
+
+                                    </span>
+
+                                </p>
+
+                                <p>
+
+                                    <b>Circular Economy Score :</b>
+
+                                </p>
+
+                                <div className="progress-bar">
+
+                                    <div
+                                        className="progress-fill"
+                                        style={{
+                                            width: analysis?.circular_score
+                                        }}
+                                    >
+
+                                        {analysis?.circular_score}
+
+                                    </div>
+
+                                </div>
 
                                 <p>✅ Material Successfully Identified</p>
 
@@ -297,15 +516,11 @@ function MaterialRecognition() {
 
                                 <p>♻ Category : <b>{result.category}</b></p>
 
-                                <p>🌍 Recyclability : <b>{result.recyclability}</b></p>
+                                <p>
+                                    🌍 Recyclability : <b>{analysis?.recyclability_score}%</b>
+                                </p>
 
-                                <p>💡 Suggested Action :</p>
 
-                                <span className="badge green">
-
-                                    {result.recommendation}
-
-                                </span>
 
                                 <hr />
 
@@ -318,16 +533,36 @@ function MaterialRecognition() {
                                 </p>
 
                                 <p>
-
                                     🌱 Environmental Impact :
 
-                                    <span className="badge green">
-
-                                        Low Waste Risk
-
+                                    <span className="badge blue">
+                                        {analysis?.environmental_impact_score}%
                                     </span>
-
                                 </p>
+                                <hr />
+
+                                <h3>✅ Sustainability Summary</h3>
+
+                                <p>
+                                    ✔ Material Classification Completed
+                                </p>
+
+                                <p>
+                                    ✔ Waste Classification Completed
+                                </p>
+
+                                <p>
+                                    ✔ Sustainability Assessment Completed
+                                </p>
+
+                                <p>
+                                    ✔ Recycling Recommendation Generated
+                                </p>
+
+                                <p>
+                                    ✔ Circular Economy Analytics Generated
+                                </p>
+
 
                             </div>
 
@@ -354,6 +589,8 @@ function MaterialRecognition() {
                                     <th>Confidence</th>
                                     <th>Category</th>
                                     <th>Recyclability</th>
+                                    <th>Impact</th>
+                                    <th>Circular Score</th>
 
                                 </tr>
 
@@ -365,15 +602,32 @@ function MaterialRecognition() {
 
                                     <tr key={index}>
 
-                                        <td>{item.time}</td>
+                                        <td>{item.created_at}</td>
 
                                         <td>{item.fabric}</td>
 
-                                        <td>{item.confidence}%</td>
+                                        <td>
+                                            <span className="badge blue">
+                                                {item.confidence}%
+                                            </span>
+                                        </td>
 
                                         <td>{item.category}</td>
-
-                                        <td>{item.recyclability}</td>
+                                        <td>
+                                            <span className="badge green">
+                                                {item.recyclability}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className="badge blue">
+                                                {item.environmental_impact}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className="badge yellow">
+                                                {item.circular_score}
+                                            </span>
+                                        </td>
 
                                     </tr>
 

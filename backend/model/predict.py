@@ -49,12 +49,44 @@ def predict_fabric(image_path):
 
 
     return {
+
     "fabric": fabric,
     "confidence": round(confidence, 2),
+
     "category": info["category"],
     "recyclability": info["recyclability"],
-    "recommendation": info["recommendation"]
-    }
+    "recommendation": info["recommendation"],
+
+    "fiber_composition": info["fiber_composition"],
+    "material_quality": info["material_quality"],
+
+    "texture": info["texture"],
+    "pattern": info["pattern"],
+    "color_type": info["color_type"],
+
+    "damage": info["damage"],
+    "contamination": info["contamination"],
+
+    "reuse_potential": info["reuse_potential"],
+    "disposal": info["disposal"],
+
+    "recycling_method": info["recycling_method"],
+
+    "environmental_impact": info["environmental_impact"],
+    "recyclability_score": info["recyclability_score"],
+    "reuse_potential_score": info["reuse_potential_score"],
+    "environmental_impact_score": info["environmental_impact_score"],
+
+    "co2_saving": info["co2_saving"],
+    "water_saving": info["water_saving"],
+
+    "circular_score": info["circular_score"],
+    "blend_identification": info["blend_identification"],
+    "waste_category": info["waste_category"],
+    "recycling_options": info["recycling_options"],
+    "waste_reduction": info["waste_reduction"]
+
+}
 
 
 if __name__ == "__main__":
