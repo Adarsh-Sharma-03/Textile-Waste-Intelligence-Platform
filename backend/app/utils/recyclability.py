@@ -26,70 +26,68 @@ def calculate_circularity_score(
     """
     # 1. Recyclability Rating (0-100)
     recyclability = int(recyclability_rate * 100)
-    if has_contaminants:
-        recyclability = max(0, recyclability - 25)
 
     # 2. Condition Score
     cond_lower = condition.lower()
     if cond_lower == "clean" or cond_lower == "recyclable":
-        condition_score = 90
-    elif cond_lower == "damaged":
-        condition_score = 60
+        condition_score = 95
+    elif cond_lower == "damaged" or cond_lower == "repairable":
+        condition_score = 65
     elif cond_lower == "wet":
         condition_score = 40
-    elif cond_lower == "contaminated":
-        condition_score = 20
+    elif cond_lower == "contaminated" or cond_lower == "non-textile" or cond_lower == "contaminated waste heap":
+        condition_score = 25
     else:
         condition_score = 50
 
     # 3. Reuse Potential
-    if has_contaminants:
-        reuse_potential = 20
+    if has_contaminants or "contaminat" in cond_lower:
+        reuse_potential = 25
     elif cond_lower == "clean":
-        reuse_potential = 85
+        reuse_potential = 92
     elif cond_lower == "damaged":
-        reuse_potential = 50
+        reuse_potential = 55
     else:
-        reuse_potential = 40
+        reuse_potential = 45
 
     # 4. Environmental Benefit
-    # High for natural fibers/clean condition, low for contaminated/synthetic blends
-    if has_contaminants:
-        env_benefit = 30
+    if has_contaminants or "contaminat" in cond_lower:
+        env_benefit = 25
     elif cond_lower == "clean":
         env_benefit = 95
+    elif cond_lower == "damaged":
+        env_benefit = 65
     else:
-        env_benefit = 70
+        env_benefit = 50
 
     # 5. Processing Feasibility
-    # Clean mono-materials are high feasibility, wet/contaminated or mixed blends are low
-    if has_contaminants:
-        process_feasibility = 30
+    if has_contaminants or "contaminat" in cond_lower:
+        proc_feasibility = 30
     elif cond_lower == "clean":
-        process_feasibility = 90
+        proc_feasibility = 95
+    elif cond_lower == "damaged":
+        proc_feasibility = 65
     else:
-        process_feasibility = 60
+        proc_feasibility = 50
 
-    # Calculate weighted index
-    score = int(round(
+    # Weighted Sum Formula
+    weighted_score = (
         0.35 * recyclability +
         0.20 * condition_score +
         0.20 * reuse_potential +
         0.15 * env_benefit +
-        0.10 * process_feasibility
-    ))
-    
-    # Cap score boundaries
-    score = min(100, max(0, score))
-    
-    category = get_circularity_category(score)
-    
+        0.10 * proc_feasibility
+    )
+
+    circularity_score = max(0, min(100, int(round(weighted_score))))
+    circularity_category = get_circularity_category(circularity_score)
+
     metrics = {
-        "recyclability": recyclability,
-        "condition": condition_score,
+        "recyclability_rating": recyclability,
+        "condition_score": condition_score,
         "reuse_potential": reuse_potential,
         "environmental_benefit": env_benefit,
-        "processing_feasibility": process_feasibility
+        "processing_feasibility": proc_feasibility,
     }
-    
-    return score, category, metrics
+
+    return circularity_score, circularity_category, metrics
