@@ -213,13 +213,9 @@ def get_non_fabric_template() -> Dict[str, Any]:
 def classify_by_image_properties(image: Image.Image, filename: str) -> Dict[str, Any]:
     fn_lower = filename.lower()
     
-    # 0. Primary non-fabric filename check
+    # 0. Primary non-fabric filename check (Only explicit non-fabric keywords)
     non_fabric_keywords = [
-        "not_fabric", "non_fabric", "notfabric", "nonfabric", "screenshot", "screen",
-        "capture", "plot", "graph", "chart", "colab", "vscode", "code", "desktop",
-        "window", "face", "car", "building", "laptop", "phone", "electronic", "device",
-        "paper", "document", "animal", "random", "food", "apple", "chair", "metal",
-        "plastic_bottle", "object", "diagram", "figure", "result", "histogram"
+        "not_fabric", "non_fabric", "notfabric", "nonfabric"
     ]
     if any(kw in fn_lower for kw in non_fabric_keywords):
         return get_non_fabric_template()
@@ -261,14 +257,20 @@ def classify_by_image_properties(image: Image.Image, filename: str) -> Dict[str,
     # 2. TextileNet (760K Taxonomies) & AITEX Industrial Texture Analysis
     try:
         rgb_img = image.convert("RGB")
-        width, height = rgb_img.size
+        w, h = rgb_img.size
         
+        # Center-crop to middle 70% to ignore outer letterbox frames/borders
+        crop_x1, crop_y1 = int(w * 0.15), int(h * 0.15)
+        crop_x2, crop_y2 = int(w * 0.85), int(h * 0.85)
+        cropped_img = rgb_img.crop((crop_x1, crop_y1, crop_x2, crop_y2))
+        cw, ch = cropped_img.size
+
         # Micro-patch grid sampling (16x16 grid = 256 feature vectors)
         grid_size = 16
         pixels = []
-        for x in range(0, width, max(1, width // grid_size)):
-            for y in range(0, height, max(1, height // grid_size)):
-                pixels.append(rgb_img.getpixel((x, y)))
+        for x in range(0, cw, max(1, cw // grid_size)):
+            for y in range(0, ch, max(1, ch // grid_size)):
+                pixels.append(cropped_img.getpixel((x, y)))
                 
         avg_r = sum(p[0] for p in pixels) / len(pixels)
         avg_g = sum(p[1] for p in pixels) / len(pixels)
@@ -289,17 +291,12 @@ def classify_by_image_properties(image: Image.Image, filename: str) -> Dict[str,
         min_l = min(lumas) if lumas else 0
         contrast_ratio = (max_l - min_l) / (max_l + min_l + 1e-5)
 
-        # Extreme dark (<35) and extreme light (>220) pixel ratio (UI screen/graph plot detection)
-        extreme_pixels = sum(1 for l in lumas if l < 35 or l > 220)
+        # Extreme dark (<20) and extreme light (>245) pixel ratio inside center crop
+        extreme_pixels = sum(1 for l in lumas if l < 20 or l > 245)
         extreme_ratio = extreme_pixels / len(lumas) if lumas else 0
 
-        # 2.5 Fabric Verification: Check for non-textile image characteristics (Screenshots, Plots, Code IDEs)
-        if (
-            extreme_ratio > 0.35 or
-            (contrast_ratio > 0.65 and extreme_ratio > 0.25) or
-            (std_dev < 1.5 and avg_h_diff < 0.5) or
-            (std_dev > 80.0 and avg_h_diff > 40.0)
-        ):
+        # 2.5 Non-Fabric Verification Guard (Only trigger for true synthetic UI plots/blank images)
+        if std_dev < 0.5 and avg_h_diff < 0.2:
             return get_non_fabric_template()
 
         # Color tint indicators
