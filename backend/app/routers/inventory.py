@@ -77,31 +77,52 @@ def get_inventory(
         "items": items
     }
 
+@router.get("/locations")
+def get_inventory_locations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(all_roles)
+):
+    locations = db.query(Inventory).all()
+    if not locations:
+        default_inv = Inventory(location_name="Main Warehouse Zone A", capacity=10000.0, current_utilization=0.0)
+        db.add(default_inv)
+        db.commit()
+        db.refresh(default_inv)
+        locations = [default_inv]
+    return locations
+
 @router.post("", response_model=WasteBatchResponse, status_code=status.HTTP_201_CREATED)
 def create_waste_batch(
     batch_in: WasteBatchCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(all_roles)
 ):
-    # Ensure inventory location exists if inventory_id is provided
-    if batch_in.inventory_id:
-        inv = db.query(Inventory).filter(Inventory.id == batch_in.inventory_id).first()
+    target_inventory_id = batch_in.inventory_id
+
+    # Ensure inventory location exists
+    inv = None
+    if target_inventory_id:
+        inv = db.query(Inventory).filter(Inventory.id == target_inventory_id).first()
+    
+    if not inv:
+        inv = db.query(Inventory).first()
         if not inv:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Inventory storage with ID {batch_in.inventory_id} not found."
-            )
-            
+            inv = Inventory(location_name="Main Warehouse Zone A", capacity=10000.0, current_utilization=0.0)
+            db.add(inv)
+            db.commit()
+            db.refresh(inv)
+        target_inventory_id = inv.id
+
     # Create the WasteBatch record
     db_batch = WasteBatch(
         fabric_type=batch_in.fabric_type,
         source=batch_in.source,
         quantity=batch_in.quantity,
-        color=batch_in.color,
+        color=batch_in.color or "Mixed Color",
         condition=batch_in.condition,
-        collection_date=batch_in.collection_date,
-        status=batch_in.status,
-        inventory_id=batch_in.inventory_id,
+        collection_date=batch_in.collection_date or date.today().isoformat(),
+        status=batch_in.status or "Collected",
+        inventory_id=target_inventory_id,
         operator_id=current_user.id
     )
     

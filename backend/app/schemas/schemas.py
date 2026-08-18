@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 
 # --- Role Schemas ---
 class RoleResponse(BaseModel):
@@ -76,14 +76,23 @@ class TextileWasteResponse(BaseModel):
 # --- Waste Batch (Main Inventory) Schemas ---
 class WasteBatchCreate(BaseModel):
     fabric_type: str = Field(..., description="Fabric type, e.g., Cotton, Polyester, Wool, Blend")
-    source: str = Field(..., description="Source, e.g., Post-consumer, Pre-consumer, Industrial")
-    quantity: float = Field(..., gt=0, description="Quantity in kg")
-    color: str = Field(..., description="Color of fabric")
-    condition: str = Field(..., description="Condition, e.g., Clean, Damaged, Recyclable")
-    collection_date: date
+    source: str = Field(default="Pre-consumer", description="Source, e.g., Post-consumer, Pre-consumer, Industrial")
+    quantity: float = Field(default=150.0, gt=0, description="Quantity in kg")
+    color: Any = Field(default="Mixed Color", description="Color of fabric")
+    condition: str = Field(default="Clean", description="Condition, e.g., Clean, Damaged, Recyclable")
+    collection_date: Optional[date] = None
     status: str = Field(default="Collected", description="Status, e.g., Collected, Sorting, Processing, Recycled, Disposed")
     inventory_id: Optional[int] = None
     textile_wastes: Optional[List[TextileWasteCreate]] = None
+
+    @field_validator("color", mode="before")
+    @classmethod
+    def validate_color(cls, v):
+        if isinstance(v, dict):
+            return v.get("name", "Mixed Color")
+        if isinstance(v, str):
+            return v
+        return "Mixed Color"
 
 class WasteBatchUpdate(BaseModel):
     fabric_type: Optional[str] = None

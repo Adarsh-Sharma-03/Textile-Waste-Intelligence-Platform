@@ -185,20 +185,27 @@ const MaterialClassificationPage = () => {
     setSavingToInventory(true);
     setError('');
     
+    const colorStr = typeof result.dominant_color === 'object' 
+      ? (result.dominant_color?.name || 'Mixed Color') 
+      : (result.dominant_color || 'Mixed Color');
+
+    const recyclabilityValue = result.metrics?.recyclability 
+      ?? (result.recyclability != null ? result.recyclability : 90);
+
     const payload = {
-      fabric_type: result.fabric_type,
+      fabric_type: result.fabric_type || 'Polyester',
       source: 'Pre-consumer', // Default to pre-consumer scraps
       quantity: parseFloat(quickQuantity) || 150.0,
-      color: result.dominant_color.name,
-      condition: result.condition,
+      color: colorStr,
+      condition: result.condition || 'Clean',
       collection_date: new Date().toISOString().split('T')[0],
       status: 'Collected',
-      inventory_id: parseInt(selectedLocation),
+      inventory_id: parseInt(selectedLocation) || 1,
       textile_wastes: [
         {
-          material_composition: result.composition,
-          recyclability_rate: result.metrics.recyclability / 100,
-          has_contaminants: result.has_contaminants
+          material_composition: result.composition || '100% Textile Fiber',
+          recyclability_rate: recyclabilityValue / 100,
+          has_contaminants: result.has_contaminants || false
         }
       ]
     };
@@ -210,8 +217,12 @@ const MaterialClassificationPage = () => {
         navigate('/inventory');
       }, 1500);
     } catch (err) {
-      console.error(err);
-      setError('Failed to save batch to warehouse inventory. Verify database connection.');
+      console.error('Failed to register batch to inventory:', err);
+      const detailMsg = err.response?.data?.detail 
+        || (Array.isArray(err.response?.data?.detail) ? err.response.data.detail[0]?.msg : null)
+        || err.message 
+        || 'Failed to save batch to warehouse inventory.';
+      setError(detailMsg);
     } finally {
       setSavingToInventory(false);
     }
