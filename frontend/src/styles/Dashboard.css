@@ -150,3 +150,50 @@ background:linear-gradient(90deg,#16a34a,#22c55e);
 transition:width .8s ease;
 
 }
+
+.analytics-section {
+    max-width: 1200px;
+    margin: 50px auto 0;
+}
+
+.analytics-section h2 {
+    color: #1e3a8a;
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+.analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.analytics-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}
+
+.analytics-card h3 {
+    color: #374151;
+    margin-bottom: 15px;
+}
+
+.analytics-card strong {
+    display: block;
+    font-size: 30px;
+    color: #2563eb;
+    margin-bottom: 10px;
+}
+
+.analytics-card p {
+    color: #6b7280;
+}
+
+.chart-container {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}

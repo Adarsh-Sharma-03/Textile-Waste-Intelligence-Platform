@@ -150,19 +150,9 @@ FABRIC_INFO = {
     "Avoid single-use garments",
     "Reuse for crafts",
     "Donate if wearable"
-],
-
-"recycling_options": [
-    "Mechanical Recycling",
-    "Fabric Reuse",
-    "Composting"
-],
-
-"waste_reduction": [
-    "Reuse as cleaning cloth",
-    "Compost natural fibers",
-    "Repair damaged fabric"
 ]
+
+
     },
 
     "Jacquard": {

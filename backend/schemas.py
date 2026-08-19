@@ -1,35 +1,73 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
-# ---------- User ----------
+
+# ---------- User ---------- #
 
 class RegisterUser(BaseModel):
-    name: str
-    email: str
-    password: str
+
+    name: str = Field(
+        ...,
+        min_length=2,
+        max_length=100
+    )
+
+    email: EmailStr
+
+    password: str = Field(
+        ...,
+        min_length=6,
+        max_length=100
+    )
 
 
 class LoginUser(BaseModel):
-    email: str
-    password: str
+
+    email: EmailStr
+
+    password: str = Field(
+        ...,
+        min_length=1
+    )
 
 
-# ---------- Inventory ----------
+# ---------- Inventory ---------- #
 
 class InventoryItem(BaseModel):
-    fabric: str
-    weight: str
+
+    fabric: str = Field(
+        ...,
+        min_length=2,
+        max_length=100
+    )
+
+    weight: str = Field(
+        ...,
+        min_length=1,
+        max_length=50
+    )
 
 
-# ---------- Dataset ----------
+# ---------- Dataset ---------- #
 
 class DatasetItem(BaseModel):
-    filename: str
-    fabric_type: str
+
+    filename: str = Field(
+        ...,
+        min_length=1,
+        max_length=255
+    )
+
+    fabric_type: str = Field(
+        ...,
+        min_length=2,
+        max_length=100
+    )
 
 
-# ---------- Prediction History ----------
+# ---------- Prediction History ---------- #
 
 class PredictionHistoryItem(BaseModel):
+
     fabric: str
     confidence: str
 

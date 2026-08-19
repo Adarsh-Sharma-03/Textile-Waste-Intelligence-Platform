@@ -67,8 +67,7 @@ def register(
             "success": False,
             "message": "Email already registered"
         }
-    print("Password received:", user.password)
-    print("Type:", type(user.password))
+    
     crud.create_user(
         db,
         user.name,
@@ -201,6 +200,16 @@ def dashboard_stats(
     db: Session = Depends(get_db)
 ):
     return crud.get_dashboard_stats(db)
+
+# ---------------- Sustainability Dashboard ---------------- #
+
+@app.get("/sustainability-dashboard")
+def sustainability_dashboard(
+    db: Session = Depends(get_db)
+):
+    return crud.get_sustainability_dashboard(db)
+
+
 
 @app.post("/predict")
 def predict_image(

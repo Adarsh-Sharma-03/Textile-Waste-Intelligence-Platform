@@ -500,7 +500,7 @@ function MaterialRecognition() {
                                     <div
                                         className="progress-fill"
                                         style={{
-                                            width: analysis?.circular_score
+                                            width: analysis?.circular_score || "0%"
                                         }}
                                     >
 
@@ -590,6 +590,8 @@ function MaterialRecognition() {
                                     <th>Category</th>
                                     <th>Recyclability</th>
                                     <th>Impact</th>
+                                    <th>CO₂ Saved</th>
+                                    <th>Water Saved</th>
                                     <th>Circular Score</th>
 
                                 </tr>
@@ -613,16 +615,31 @@ function MaterialRecognition() {
                                         </td>
 
                                         <td>{item.category}</td>
+
                                         <td>
                                             <span className="badge green">
                                                 {item.recyclability}
                                             </span>
                                         </td>
+
                                         <td>
                                             <span className="badge blue">
                                                 {item.environmental_impact}
                                             </span>
                                         </td>
+
+                                        <td>
+                                            <span className="badge green">
+                                                {item.co2_saving}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span className="badge blue">
+                                                {item.water_saving}
+                                            </span>
+                                        </td>
+
                                         <td>
                                             <span className="badge yellow">
                                                 {item.circular_score}

@@ -218,3 +218,31 @@ input[type="file"]:hover {
 .history-card tbody tr:nth-child(even) {
     background: #f8fafc;
 }
+.history-card {
+    margin-top: 40px;
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .12);
+    overflow-x: auto;
+}
+.history-card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.history-card th {
+    background: #2563eb;
+    color: white;
+    text-align: left;
+}
+
+.history-card td {
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.history-card tbody tr:last-child td {
+    border-bottom: none;
+}

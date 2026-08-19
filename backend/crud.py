@@ -139,6 +139,7 @@ def get_dashboard_stats(db: Session):
     )
 
     avg_score = 0
+    sustainability_grade = "N/A"
 
     scores = db.query(models.PredictionHistory.circular_score).all()
 

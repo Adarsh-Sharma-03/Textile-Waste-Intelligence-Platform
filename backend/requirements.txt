@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg[binary]
+python-dotenv
+python-multipart
+passlib
+bcrypt
+tensorflow
+numpy
+pillow
+reportlab
+email-validator
+passlib==1.7.4
+bcrypt==3.2.2
