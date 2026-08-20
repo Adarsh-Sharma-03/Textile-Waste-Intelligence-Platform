@@ -17,6 +17,20 @@ from model.predict import predict_fabric
 from database import Base, engine, get_db
 import models
 import crud
+import os
+import uvicorn
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Backend is running!"}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 from schemas import (
     RegisterUser,
