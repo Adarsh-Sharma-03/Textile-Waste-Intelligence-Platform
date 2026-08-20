@@ -29,6 +29,10 @@ Thumbs.db
 backend/dataset/
 backend/uploads/
 backend/temp/
+<<<<<<< HEAD
 backend/reports/
 
 .env
+=======
+backend/reports/
+>>>>>>> main

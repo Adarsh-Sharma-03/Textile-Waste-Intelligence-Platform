@@ -17,6 +17,7 @@ from model.predict import predict_fabric
 from database import Base, engine, get_db
 import models
 import crud
+<<<<<<< HEAD
 import os
 import uvicorn
 from fastapi import FastAPI
@@ -31,6 +32,8 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     uvicorn.run(app, host="0.0.0.0", port=port)
 
+=======
+>>>>>>> main
 
 from schemas import (
     RegisterUser,
