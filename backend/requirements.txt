@@ -7,7 +7,7 @@ python-dotenv
 python-multipart
 passlib
 bcrypt
-tensorflow
+tensorflow-cpu==2.21.0
 numpy
 pillow
 reportlab
