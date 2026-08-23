@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import Navbar from "../components/Navbar";
+import Navbar from "../components/navbar";
 import "../styles/Login.css";
 import API from "../services/api";
 

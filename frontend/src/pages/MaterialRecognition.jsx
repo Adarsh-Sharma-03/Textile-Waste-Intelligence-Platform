@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/navbar";
 import api from "../services/api";
 import "../styles/Dashboard.css";
 import "../styles/MaterialRecognition.css";

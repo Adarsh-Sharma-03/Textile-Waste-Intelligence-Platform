@@ -8,13 +8,17 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
+    raise ValueError("DATABASE_URL is not set in .env")
 
-# Match SQLAlchemy URL with installed psycopg2-binary driver
-DATABASE_URL = DATABASE_URL.replace(
-    "postgresql+psycopg://",
-    "postgresql+psycopg2://"
-)
+# Force PostgreSQL psycopg v3 driver
+if DATABASE_URL.startswith("postgresql+psycopg://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql+psycopg://",
+        "postgresql+psycopg://",
+        1
+    )
+
+print("DATABASE URL DRIVER:", DATABASE_URL.split("://")[0])
 
 engine = create_engine(
     DATABASE_URL,
