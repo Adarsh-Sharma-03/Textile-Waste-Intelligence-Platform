@@ -198,7 +198,7 @@ This helps organize and manage datasets used for:
                                   │ + Waste Intelligence │
                                   └──────────────────────┘
 
-
+```
 ---
 
 # 🧩 Technology Stack
