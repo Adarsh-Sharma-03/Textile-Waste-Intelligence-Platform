@@ -1,6 +1,3 @@
-
-
-````markdown
 # ♻️ Textile Waste Intelligence Platform
 
 An AI-powered web platform designed to support intelligent textile waste management through **fabric classification, waste analysis, recycling recommendations, sustainability insights, and dataset management**.
@@ -200,7 +197,7 @@ This helps organize and manage datasets used for:
                                   │ Fabric Prediction    │
                                   │ + Waste Intelligence │
                                   └──────────────────────┘
-````
+
 
 ---
 
